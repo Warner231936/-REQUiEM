@@ -58,6 +58,9 @@ data/db/
 server_err.log
 port_test.log
 
+# Generated PDFs from audit reports
+*.pdf
+
 # Vendor
 vendor/
 
