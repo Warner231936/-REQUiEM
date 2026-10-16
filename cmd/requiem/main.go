@@ -43,6 +43,10 @@ func main() {
 		cfg = config.LoadFromEnv()
 	}
 
+	if os.Getenv("REQUIEM_AUTH_DISABLED") == "true" {
+		cfg.Auth.Enabled = false
+	}
+
 	// Config watcher for hot-reload will be set up after pipeline creation
 	// (moved below to capture pipeline reference)
 
