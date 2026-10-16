@@ -157,6 +157,7 @@ type Contradiction struct {
 
 type MindQuery struct {
 	IDs           []string
+	UserID        string
 	Subjects      []string
 	Status        RecordStatus
 	MinConfidence Confidence

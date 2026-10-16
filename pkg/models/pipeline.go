@@ -24,6 +24,7 @@ type StageConfig struct {
 type PipelineInput struct {
 	ConversationID string    `json:"conversation_id"`
 	TurnID         string    `json:"turn_id"`
+	UserID         string    `json:"user_id,omitempty"`
 	UserMessage    string    `json:"user_message"`
 	Timestamp      time.Time `json:"timestamp"`
 	Metadata       AnyMap    `json:"metadata,omitempty"`

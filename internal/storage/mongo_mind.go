@@ -20,6 +20,9 @@ func (m *mongoMindStore) GetBeliefs(ctx context.Context, query models.MindQuery)
 }
 
 func (m *mongoMindStore) CreateBelief(ctx context.Context, belief models.Belief) error {
+	if belief.UserID == "" {
+		belief.UserID = GetUserIDFromContext(ctx)
+	}
 	belief.CreatedAt = time.Now().UTC()
 	belief.UpdatedAt = belief.CreatedAt
 	_, err := m.store.beliefsCollection.InsertOne(ctx, belief)
@@ -162,9 +165,15 @@ func (m *mongoMindStore) UpdateContradiction(ctx context.Context, contradiction 
 	return err
 }
 
-func buildMindFilter(query models.MindQuery) bson.M {
+func buildMindFilter(ctx context.Context, query models.MindQuery) bson.M {
+	if query.UserID == "" {
+		query.UserID = GetUserIDFromContext(ctx)
+	}
 	filter := bson.M{}
 
+	if query.UserID != "" {
+		filter["user_id"] = query.UserID
+	}
 	if len(query.IDs) > 0 {
 		filter["_id"] = bson.M{"$in": query.IDs}
 	}
@@ -194,7 +203,7 @@ func getMindFindOptions(query models.MindQuery) *options.FindOptions {
 }
 
 func queryBeliefs(ctx context.Context, coll *mongo.Collection, query models.MindQuery) ([]models.Belief, error) {
-	cursor, err := coll.Find(ctx, buildMindFilter(query), getMindFindOptions(query))
+	cursor, err := coll.Find(ctx, buildMindFilter(ctx, query), getMindFindOptions(query))
 	if err != nil {
 		return nil, fmt.Errorf("query beliefs: %w", err)
 	}
@@ -208,7 +217,7 @@ func queryBeliefs(ctx context.Context, coll *mongo.Collection, query models.Mind
 }
 
 func queryOpinions(ctx context.Context, coll *mongo.Collection, query models.MindQuery) ([]models.Opinion, error) {
-	cursor, err := coll.Find(ctx, buildMindFilter(query), getMindFindOptions(query))
+	cursor, err := coll.Find(ctx, buildMindFilter(ctx, query), getMindFindOptions(query))
 	if err != nil {
 		return nil, fmt.Errorf("query opinions: %w", err)
 	}
@@ -222,7 +231,7 @@ func queryOpinions(ctx context.Context, coll *mongo.Collection, query models.Min
 }
 
 func queryPreferences(ctx context.Context, coll *mongo.Collection, query models.MindQuery) ([]models.Preference, error) {
-	cursor, err := coll.Find(ctx, buildMindFilter(query), getMindFindOptions(query))
+	cursor, err := coll.Find(ctx, buildMindFilter(ctx, query), getMindFindOptions(query))
 	if err != nil {
 		return nil, fmt.Errorf("query preferences: %w", err)
 	}
@@ -236,7 +245,7 @@ func queryPreferences(ctx context.Context, coll *mongo.Collection, query models.
 }
 
 func queryValues(ctx context.Context, coll *mongo.Collection, query models.MindQuery) ([]models.Value, error) {
-	cursor, err := coll.Find(ctx, buildMindFilter(query), getMindFindOptions(query))
+	cursor, err := coll.Find(ctx, buildMindFilter(ctx, query), getMindFindOptions(query))
 	if err != nil {
 		return nil, fmt.Errorf("query values: %w", err)
 	}
@@ -250,7 +259,7 @@ func queryValues(ctx context.Context, coll *mongo.Collection, query models.MindQ
 }
 
 func queryGoals(ctx context.Context, coll *mongo.Collection, query models.MindQuery) ([]models.Goal, error) {
-	cursor, err := coll.Find(ctx, buildMindFilter(query), getMindFindOptions(query))
+	cursor, err := coll.Find(ctx, buildMindFilter(ctx, query), getMindFindOptions(query))
 	if err != nil {
 		return nil, fmt.Errorf("query goals: %w", err)
 	}
@@ -264,7 +273,7 @@ func queryGoals(ctx context.Context, coll *mongo.Collection, query models.MindQu
 }
 
 func queryHypotheses(ctx context.Context, coll *mongo.Collection, query models.MindQuery) ([]models.Hypothesis, error) {
-	cursor, err := coll.Find(ctx, buildMindFilter(query), getMindFindOptions(query))
+	cursor, err := coll.Find(ctx, buildMindFilter(ctx, query), getMindFindOptions(query))
 	if err != nil {
 		return nil, fmt.Errorf("query hypotheses: %w", err)
 	}
@@ -278,7 +287,7 @@ func queryHypotheses(ctx context.Context, coll *mongo.Collection, query models.M
 }
 
 func queryUncertainties(ctx context.Context, coll *mongo.Collection, query models.MindQuery) ([]models.Uncertainty, error) {
-	cursor, err := coll.Find(ctx, buildMindFilter(query), getMindFindOptions(query))
+	cursor, err := coll.Find(ctx, buildMindFilter(ctx, query), getMindFindOptions(query))
 	if err != nil {
 		return nil, fmt.Errorf("query uncertainties: %w", err)
 	}
@@ -292,7 +301,7 @@ func queryUncertainties(ctx context.Context, coll *mongo.Collection, query model
 }
 
 func querySelfObservations(ctx context.Context, coll *mongo.Collection, query models.MindQuery) ([]models.SelfObservation, error) {
-	cursor, err := coll.Find(ctx, buildMindFilter(query), getMindFindOptions(query))
+	cursor, err := coll.Find(ctx, buildMindFilter(ctx, query), getMindFindOptions(query))
 	if err != nil {
 		return nil, fmt.Errorf("query self_observations: %w", err)
 	}
@@ -306,7 +315,7 @@ func querySelfObservations(ctx context.Context, coll *mongo.Collection, query mo
 }
 
 func queryContradictions(ctx context.Context, coll *mongo.Collection, query models.MindQuery) ([]models.Contradiction, error) {
-	cursor, err := coll.Find(ctx, buildMindFilter(query), getMindFindOptions(query))
+	cursor, err := coll.Find(ctx, buildMindFilter(ctx, query), getMindFindOptions(query))
 	if err != nil {
 		return nil, fmt.Errorf("query contradictions: %w", err)
 	}

@@ -110,6 +110,10 @@ func isRelatedToGoals(content string, beliefs []models.Belief) bool {
 func (s *Stage6Consolidation) Execute(ctx context.Context, input StageInput) (StageOutput, error) {
 	startTime := time.Now()
 
+	if input.PipelineInput.UserID != "" {
+		ctx = storage.WithUserID(ctx, input.PipelineInput.UserID)
+	}
+
 	reflection := input.Stage3Output
 	if reflection == nil {
 		return NewStageOutput(5, true, time.Since(startTime).Milliseconds(), nil), nil
@@ -272,6 +276,7 @@ func (s *Stage6Consolidation) consolidateLearnedFact(ctx context.Context, fact m
 
 	memory := models.Memory{
 		BaseRecord: models.NewBaseRecord(uuid.New().String()),
+		UserID:     storage.GetUserIDFromContext(ctx),
 		Type:       models.MemoryTypeSemantic,
 		Content:    s.sanitizer.SanitizeString(fact.Content),
 		Importance: calculateImportance(fact.Content, fact.Confidence, len(fact.Evidence), false, false, isTechnicalContent(fact.Content)),
@@ -805,6 +810,7 @@ func (s *Stage6Consolidation) consolidateMemoryCandidate(ctx context.Context, ca
 
 	memory := models.Memory{
 		BaseRecord: models.NewBaseRecord(uuid.New().String()),
+		UserID:     storage.GetUserIDFromContext(ctx),
 		Type:       memoryType,
 		Content:    s.sanitizer.SanitizeString(candidate.Content),
 		Importance: calculateImportance(candidate.Content, candidate.Confidence, len(candidate.Evidence), false, false, isTechnicalContent(candidate.Content)),

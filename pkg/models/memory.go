@@ -12,6 +12,7 @@ const (
 type Memory struct {
 	BaseRecord
 	Type               MemoryType `json:"type" bson:"type"`
+	UserID             string     `json:"user_id,omitempty" bson:"user_id,omitempty"`
 	Content            string     `json:"content" bson:"content"`
 	ConversationID     string     `json:"conversation_id,omitempty" bson:"conversation_id,omitempty"`
 	TurnID             string     `json:"turn_id,omitempty" bson:"turn_id,omitempty"`
@@ -26,6 +27,7 @@ type Memory struct {
 
 type MemoryQuery struct {
 	ConversationID string
+	UserID         string
 	Tags           []string
 	Type           MemoryType
 	Limit          int

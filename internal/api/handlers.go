@@ -44,6 +44,28 @@ func NewHandlerWithEmbeddings(p *pipeline.Pipeline, store *storage.MongoStore, e
 	}
 }
 
+func getOrCreateUserID(r *http.Request, w http.ResponseWriter) string {
+	if uid := r.Header.Get("X-User-ID"); uid != "" {
+		return uid
+	}
+	if uid := r.URL.Query().Get("user_id"); uid != "" {
+		return uid
+	}
+	if cookie, err := r.Cookie("requiem_user_id"); err == nil && cookie.Value != "" {
+		return cookie.Value
+	}
+	uid := models.NewID()
+	http.SetCookie(w, &http.Cookie{
+		Name:     "requiem_user_id",
+		Value:    uid,
+		Path:     "/",
+		MaxAge:   30 * 24 * 60 * 60,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+	return uid
+}
+
 func (h *Handler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("/api/chat", h.handleChat)
 	mux.HandleFunc("/api/mind", h.handleMind)
@@ -181,6 +203,8 @@ func (h *Handler) handleChat(w http.ResponseWriter, r *http.Request) {
 	}
 	turnID := models.NewID()
 
+	userID := getOrCreateUserID(r, w)
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     "requiem_conv_id",
 		Value:    convID,
@@ -191,6 +215,7 @@ func (h *Handler) handleChat(w http.ResponseWriter, r *http.Request) {
 	})
 
 	ctx := r.Context()
+	ctx = storage.WithUserID(ctx, userID)
 
 	input := models.PipelineInput{
 		ConversationID: convID,
@@ -198,6 +223,7 @@ func (h *Handler) handleChat(w http.ResponseWriter, r *http.Request) {
 		UserMessage:    req.Message,
 		Timestamp:      time.Now().UTC(),
 		Metadata:       req.Metadata,
+		UserID:         userID,
 	}
 
 	output, err := h.pipeline.Execute(ctx, input)
@@ -232,7 +258,7 @@ func (h *Handler) handleChat(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		bgCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
-		h.persistUserFacts(bgCtx, convID, turnID, req.Message)
+		h.persistUserFacts(bgCtx, userID, convID, turnID, req.Message)
 	}()
 
 	writeJSON(w, http.StatusOK, models.AnyMap{
@@ -245,7 +271,7 @@ func (h *Handler) handleChat(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *Handler) persistUserFacts(ctx context.Context, convID, turnID, userMessage string) {
+func (h *Handler) persistUserFacts(ctx context.Context, userID, convID, turnID, userMessage string) {
 	if h.embeddingService == nil {
 		return
 	}
@@ -276,6 +302,7 @@ func (h *Handler) persistUserFacts(ctx context.Context, convID, turnID, userMess
 
 	memory := models.Memory{
 		BaseRecord:     models.NewBaseRecord(models.NewID()),
+		UserID:         userID,
 		Type:           models.MemoryTypeEpisodic,
 		Content:        userMessage,
 		ConversationID: convID,
@@ -298,10 +325,13 @@ func (h *Handler) handleMind(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userID := getOrCreateUserID(r, w)
 	ctx := r.Context()
+	ctx = storage.WithUserID(ctx, userID)
+	mindQuery := models.MindQuery{Limit: 50, UserID: userID}
 	result := models.AnyMap{}
 
-	beliefs, err := h.storage.Mind().GetBeliefs(ctx, models.MindQuery{Limit: 50})
+	beliefs, err := h.storage.Mind().GetBeliefs(ctx, mindQuery)
 	if err == nil {
 		if beliefs == nil {
 			beliefs = []models.Belief{}
@@ -312,7 +342,7 @@ func (h *Handler) handleMind(w http.ResponseWriter, r *http.Request) {
 		result["beliefs_error"] = err.Error()
 	}
 
-	opinions, err := h.storage.Mind().GetOpinions(ctx, models.MindQuery{Limit: 50})
+	opinions, err := h.storage.Mind().GetOpinions(ctx, models.MindQuery{Limit: 50, UserID: userID})
 	if err == nil {
 		if opinions == nil {
 			opinions = []models.Opinion{}
@@ -323,7 +353,7 @@ func (h *Handler) handleMind(w http.ResponseWriter, r *http.Request) {
 		result["opinions_error"] = err.Error()
 	}
 
-	preferences, err := h.storage.Mind().GetPreferences(ctx, models.MindQuery{Limit: 50})
+	preferences, err := h.storage.Mind().GetPreferences(ctx, models.MindQuery{Limit: 50, UserID: userID})
 	if err == nil {
 		if preferences == nil {
 			preferences = []models.Preference{}
@@ -334,7 +364,7 @@ func (h *Handler) handleMind(w http.ResponseWriter, r *http.Request) {
 		result["preferences_error"] = err.Error()
 	}
 
-	goals, err := h.storage.Mind().GetGoals(ctx, models.MindQuery{Limit: 50})
+	goals, err := h.storage.Mind().GetGoals(ctx, models.MindQuery{Limit: 50, UserID: userID})
 	if err == nil {
 		if goals == nil {
 			goals = []models.Goal{}
@@ -354,7 +384,10 @@ func (h *Handler) handleBeliefs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	beliefs, err := h.storage.Mind().GetBeliefs(r.Context(), models.MindQuery{Limit: 100})
+	userID := getOrCreateUserID(r, w)
+	ctx := r.Context()
+	ctx = storage.WithUserID(ctx, userID)
+	beliefs, err := h.storage.Mind().GetBeliefs(ctx, models.MindQuery{Limit: 100, UserID: userID})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to retrieve beliefs")
 		return
@@ -372,7 +405,10 @@ func (h *Handler) handleOpinions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	opinions, err := h.storage.Mind().GetOpinions(r.Context(), models.MindQuery{Limit: 100})
+	userID := getOrCreateUserID(r, w)
+	ctx := r.Context()
+	ctx = storage.WithUserID(ctx, userID)
+	opinions, err := h.storage.Mind().GetOpinions(ctx, models.MindQuery{Limit: 100, UserID: userID})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to retrieve opinions")
 		return
@@ -390,7 +426,10 @@ func (h *Handler) handlePreferences(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	preferences, err := h.storage.Mind().GetPreferences(r.Context(), models.MindQuery{Limit: 100})
+	userID := getOrCreateUserID(r, w)
+	ctx := r.Context()
+	ctx = storage.WithUserID(ctx, userID)
+	preferences, err := h.storage.Mind().GetPreferences(ctx, models.MindQuery{Limit: 100, UserID: userID})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to retrieve preferences")
 		return
@@ -408,7 +447,10 @@ func (h *Handler) handleValues(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	values, err := h.storage.Mind().GetValues(r.Context(), models.MindQuery{Limit: 100})
+	userID := getOrCreateUserID(r, w)
+	ctx := r.Context()
+	ctx = storage.WithUserID(ctx, userID)
+	values, err := h.storage.Mind().GetValues(ctx, models.MindQuery{Limit: 100, UserID: userID})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to retrieve values")
 		return
@@ -426,7 +468,10 @@ func (h *Handler) handleGoals(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	goals, err := h.storage.Mind().GetGoals(r.Context(), models.MindQuery{Limit: 100})
+	userID := getOrCreateUserID(r, w)
+	ctx := r.Context()
+	ctx = storage.WithUserID(ctx, userID)
+	goals, err := h.storage.Mind().GetGoals(ctx, models.MindQuery{Limit: 100, UserID: userID})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to retrieve goals")
 		return
@@ -444,7 +489,10 @@ func (h *Handler) handleHypotheses(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hypotheses, err := h.storage.Mind().GetHypotheses(r.Context(), models.MindQuery{Limit: 100})
+	userID := getOrCreateUserID(r, w)
+	ctx := r.Context()
+	ctx = storage.WithUserID(ctx, userID)
+	hypotheses, err := h.storage.Mind().GetHypotheses(ctx, models.MindQuery{Limit: 100, UserID: userID})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to retrieve hypotheses")
 		return
@@ -462,7 +510,10 @@ func (h *Handler) handleUncertainties(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	uncertainties, err := h.storage.Mind().GetUncertainties(r.Context(), models.MindQuery{Limit: 100})
+	userID := getOrCreateUserID(r, w)
+	ctx := r.Context()
+	ctx = storage.WithUserID(ctx, userID)
+	uncertainties, err := h.storage.Mind().GetUncertainties(ctx, models.MindQuery{Limit: 100, UserID: userID})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to retrieve uncertainties")
 		return
@@ -480,7 +531,10 @@ func (h *Handler) handleSelfObservations(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	observations, err := h.storage.Mind().GetSelfObservations(r.Context(), models.MindQuery{Limit: 100})
+	userID := getOrCreateUserID(r, w)
+	ctx := r.Context()
+	ctx = storage.WithUserID(ctx, userID)
+	observations, err := h.storage.Mind().GetSelfObservations(ctx, models.MindQuery{Limit: 100, UserID: userID})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to retrieve self-observations")
 		return
@@ -498,7 +552,10 @@ func (h *Handler) handleContradictions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	contradictions, err := h.storage.Mind().GetContradictions(r.Context(), models.MindQuery{Limit: 100})
+	userID := getOrCreateUserID(r, w)
+	ctx := r.Context()
+	ctx = storage.WithUserID(ctx, userID)
+	contradictions, err := h.storage.Mind().GetContradictions(ctx, models.MindQuery{Limit: 100, UserID: userID})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to retrieve contradictions")
 		return
@@ -541,6 +598,9 @@ func (h *Handler) handleMemory(w http.ResponseWriter, r *http.Request) {
 		Limit: 50,
 	}
 
+	userID := getOrCreateUserID(r, w)
+	query.UserID = userID
+
 	if memType := r.URL.Query().Get("type"); memType != "" {
 		query.Type = models.MemoryType(memType)
 	}
@@ -548,7 +608,9 @@ func (h *Handler) handleMemory(w http.ResponseWriter, r *http.Request) {
 		query.Tags = strings.Split(tags, ",")
 	}
 
-	results, err := h.storage.Memory().Search(r.Context(), query)
+	ctx := r.Context()
+	ctx = storage.WithUserID(ctx, userID)
+	results, err := h.storage.Memory().Search(ctx, query)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to search memories")
 		return
@@ -589,6 +651,11 @@ func (h *Handler) handleMemoryByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userID := getOrCreateUserID(r, w)
+	if memory.UserID != "" && memory.UserID != userID {
+		writeError(w, http.StatusForbidden, "access denied to this memory")
+		return
+	}
 	writeJSON(w, http.StatusOK, memory)
 }
 

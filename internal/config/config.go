@@ -97,13 +97,18 @@ func Load(path string) (*Config, error) {
 	}
 
 	setDefaults(&cfg)
+	applyEnvOverrides(&cfg)
 	return &cfg, nil
 }
 
 func LoadFromEnv() *Config {
 	cfg := &Config{}
 	setDefaults(cfg)
+	applyEnvOverrides(cfg)
+	return cfg
+}
 
+func applyEnvOverrides(cfg *Config) {
 	if uri := os.Getenv("MONGODB_URI"); uri != "" {
 		cfg.Database.MongoDB.URI = uri
 	}
@@ -113,7 +118,6 @@ func LoadFromEnv() *Config {
 	if debug := os.Getenv("COGNITIVE_DEBUG"); debug == "true" {
 		cfg.Pipeline.Debug = true
 	}
-
 	if host := os.Getenv("SERVER_HOST"); host != "" {
 		cfg.Server.Host = host
 	}
@@ -122,22 +126,17 @@ func LoadFromEnv() *Config {
 			cfg.Server.Port = p
 		}
 	}
-
 	if origin := os.Getenv("CORS_ALLOWED_ORIGIN"); origin != "" {
 		cfg.Auth.AllowedOrigins = []string{origin}
 	}
-
 	if os.Getenv("REQUIEM_AUTH_DISABLED") == "true" {
 		cfg.Auth.Enabled = false
-	} else {
-		cfg.Auth.Enabled = true
+	} else if val := os.Getenv("REQUIEM_AUTH_ENABLED"); val != "" {
+		cfg.Auth.Enabled = (val == "true")
 	}
-
 	if jwtSecret := os.Getenv("JWT_SECRET"); jwtSecret != "" {
 		cfg.Auth.JWTSecret = jwtSecret
 	}
-
-	return cfg
 }
 
 func expandEnvVars(data []byte) []byte {

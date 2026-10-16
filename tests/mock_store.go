@@ -44,6 +44,9 @@ func (m *MockMemoryStore) Search(ctx context.Context, query models.MemoryQuery) 
 
 	var results []models.MemorySearchResult
 	for _, mem := range m.memories {
+		if query.UserID != "" && mem.UserID != query.UserID {
+			continue
+		}
 		if query.Type != "" && mem.Type != query.Type {
 			continue
 		}

@@ -11,11 +11,29 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+type contextKey string
+
+const userIDKey contextKey = "user_id"
+
+func WithUserID(ctx context.Context, userID string) context.Context {
+	return context.WithValue(ctx, userIDKey, userID)
+}
+
+func GetUserIDFromContext(ctx context.Context) string {
+	if v, ok := ctx.Value(userIDKey).(string); ok {
+		return v
+	}
+	return ""
+}
+
 type mongoMemoryStore struct {
 	store *MongoStore
 }
 
 func (m *mongoMemoryStore) Create(ctx context.Context, memory models.Memory) error {
+	if memory.UserID == "" {
+		memory.UserID = GetUserIDFromContext(ctx)
+	}
 	memory.CreatedAt = time.Now().UTC()
 	memory.UpdatedAt = memory.CreatedAt
 
@@ -39,8 +57,14 @@ func (m *mongoMemoryStore) Get(ctx context.Context, id string) (models.Memory, e
 }
 
 func (m *mongoMemoryStore) Search(ctx context.Context, query models.MemoryQuery) ([]models.MemorySearchResult, error) {
+	if query.UserID == "" {
+		query.UserID = GetUserIDFromContext(ctx)
+	}
 	filter := bson.M{}
 
+	if query.UserID != "" {
+		filter["user_id"] = query.UserID
+	}
 	if query.Type != "" {
 		filter["type"] = query.Type
 	}
@@ -122,6 +146,12 @@ func (m *mongoMemoryStore) Delete(ctx context.Context, id string) error {
 func (m *mongoMemoryStore) GetByConversation(ctx context.Context, conversationID string, limit int) ([]models.Memory, error) {
 	if limit <= 0 {
 		limit = 50
+	}
+
+	userID := GetUserIDFromContext(ctx)
+	filter := bson.M{"conversation_id": conversationID}
+	if userID != "" {
+		filter["user_id"] = userID
 	}
 
 	opts := options.Find().
