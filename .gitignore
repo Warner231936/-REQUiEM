@@ -29,8 +29,8 @@ go.work.sum
 .agent/cache/
 .agent/cache/**
 
-# ReQiCode: separate git module, handle as submodule
-ReqiCode/
+# ReQiCode: separate git module, tracked as git submodule
+# (do not ignore — submodule gitlink must be in root repo)
 
 # Discord bot (separate concern)
 discord/
