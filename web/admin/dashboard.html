@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requiem Admin Dashboard</title>
+    <meta name="description" content="Admin Dashboard - Requiem Cognitive Control Panel">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0a0a1a 0%, #12122a 50%, #0a0a1a 100%);
+            --card-bg: rgba(15, 15, 35, 0.9);
+            --card-border: #4a00ff;
+            --primary: #4a00ff;
+            --accent: #00d4ff;
+            --text-primary: #e0e0ff;
+            --text-secondary: #a0a0c0;
+            --error: #ff4466;
+            --success: #00ff88;
+            --warning: #ffaa00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: var(--card-bg);
+            border-right: 1px solid var(--card-border);
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar .logo {
+            font-size: 20px;
+            font-weight: bold;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-transparent;
+            background-clip: text;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .sidebar nav a {
+            display: block;
+            padding: 12px 16px;
+            margin-bottom: 4px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .sidebar nav a:hover,
+        .sidebar nav a.active {
+            color: var(--accent);
+            background: rgba(74, 0, 255, 0.1);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 32px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: var(--text-primary);
+        }
+
+        .header .actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: rgba(74, 0, 255, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            color: #000;
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 15px rgba(74, 0, 255, 0.4);
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 68, 102, 0.15);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-card .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+
+        .stat-card .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .table-container {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: rgba(74, 0, 255, 0.1);
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--accent);
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(74, 0, 255, 0.05);
+            font-size: 13px;
+        }
+
+        tr:hover {
+            background: rgba(74, 0, 255, 0.03);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--success);
+        }
+
+        .status-pending {
+            background: rgba(255, 170, 0, 0.15);
+            color: var(--warning);
+        }
+
+        .status-inactive {
+            background: rgba(255, 68, 102, 0.15);
+            color: var(--error);
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .refresh-notice {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 12px;
+            padding: 16px;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--error);
+            cursor: pointer;
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+            padding: 8px 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="sidebar">
+            <div class="logo">REQUIEM ADMIN</div>
+            <nav>
+                <a href="#" class="active">Dashboard</a>
+                <a href="#" onclick="showSection('mind')">Mind State</a>
+                <a href="#" onclick="showSection('memory')">Memory</a>
+                <a href="#" onclick="showSection('users')">Users</a>
+                <a href="#" onclick="showSection('drift')">Drift Detection</a>
+                <a href="#" onclick="showSection('snapshots')">Snapshots</a>
+                <a href="#" onclick="showSection('settings')">Settings</a>
+                <a href="#" onclick="logout()" class="logout-btn">Logout &rarr;</a>
+            </nav>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <h1 id="pageTitle">Dashboard</h1>
+                <div class="actions">
+                    <button class="btn" onclick="refreshData()">Refresh</button>
+                    <button class="btn btn-primary" onclick="createSnapshot()">Create Snapshot</button>
+                </div>
+            </div>
+
+            <div id="dashboardContent">
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="beliefCount">-</div>
+                        <div class="stat-label">Beliefs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="memoryCount">-</div>
+                        <div class="stat-label">Memories</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="hypothesisCount">-</div>
+                        <div class="stat-label">Hypotheses</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="userCount">-</div>
+                        <div class="stat-label">Users</div>
+                    </div>
+                </div>
+
+                <!-- Activity Feed -->
+                <div class="section-title">Recent Cognitive Events</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Event</th>
+                                <th>Details</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="eventsTable">
+                            <tr>
+                                <td colspan="4" class="refresh-notice">Loading events...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSection = 'dashboard';
+
+        async function refreshData() {
+            try {
+                // Fetch stats
+                const [mindRes, memoryRes, usersRes] = await Promise.allSettled([
+                    fetch('/api/mind', { credentials: 'include' }),
+                    fetch('/api/memory?type=episodic&limit=1', { credentials: 'include' }),
+                    fetch('/api/metrics', { credentials: 'include' })
+                ]);
+
+                if (mindRes.status === 'fulfilled' && mindRes.value.ok) {
+                    const mind = await mindRes.value.json();
+                    document.getElementById('beliefCount').textContent = mind.beliefs?.length || 0;
+                    document.getElementById('hypothesisCount').textContent = mind.hypotheses?.length || 0;
+                }
+
+                if (memoryRes.status === 'fulfilled' && memoryRes.value.ok) {
+                    const memory = await memoryRes.value.json();
+                    document.getElementById('memoryCount').textContent = memory.total_count || memory.length || 0;
+                }
+
+                document.getElementById('eventsTable').innerHTML = '<tr><td colspan="4" class="refresh-notice">No recent events</td></tr>';
+            } catch (err) {
+                console.error('Failed to refresh data:', err);
+            }
+        }
+
+        function showSection(section) {
+            currentSection = section;
+            document.getElementById('pageTitle').textContent = section.charAt(0).toUpperCase() + section.slice(1);
+            document.getElementById('eventsTable').innerHTML = '<tr><td colspan="4" class="refresh-notice">Loading...</td></tr>';
+        }
+
+        async function createSnapshot() {
+            try {
+                const res = await fetch('/api/mind/snapshot', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Snapshot created successfully');
+                } else {
+                    alert(data.error || 'Failed to create snapshot');
+                }
+            } catch (err) {
+                alert('Network error');
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+            window.location.href = '/admin/';
+        }
+
+        // Initial load
+        refreshData();
+
+        // Auto-refresh every 30 seconds
+        setInterval(refreshData, 30000);
+    </script>
+</body>
+</html>

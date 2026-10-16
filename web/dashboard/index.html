@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requiem // Consciousness Stream</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+    <link rel="stylesheet" href="/dashboard/css/style.css">
+</head>
+<body>
+    <div class="dashboard-header">
+        <div class="header-title">
+            <span class="logo">REQUIEM</span>
+            <span class="divider">//</span>
+            <span class="stream-label">CONSCIOUSNESS STREAM</span>
+        </div>
+        <div class="header-status">
+            <span class="status-indicator" id="connectionStatus">● DISCONNECTED</span>
+            <span class="timestamp" id="currentTimestamp">12:31:42</span>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Left Panel: AI Status Overview -->
+        <div class="left-panel">
+            <div class="panel-section">
+                <h2 class="panel-title">SYSTEM STATUS</h2>
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">ACTIVE BELIEFS</span>
+                        <span class="stat-value" id="activeBeliefs">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">NEW TODAY</span>
+                        <span class="stat-value" id="newToday">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">CONFIDENCE CHANGES</span>
+                        <span class="stat-value" id="confChanges">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">ACTIVE REASONING</span>
+                        <span class="stat-value" id="activeReasoning">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">CONTRADICTIONS</span>
+                        <span class="stat-value" id="contradictions">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">AVG CONFIDENCE</span>
+                        <span class="stat-value" id="avgConfidence">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h2 class="panel-title">KEY METRICS</h2>
+                <div class="metric-bar-container">
+                    <div class="metric-bar">
+                        <span class="metric-bar-label">Pipeline Load</span>
+                        <div class="metric-bar-track">
+                            <div class="metric-bar-fill" id="pipelineLoad" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="metric-bar">
+                        <span class="metric-bar-label">Memory Utilization</span>
+                        <div class="metric-bar-track">
+                            <div class="metric-bar-fill success" id="memoryUsage" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="metric-bar">
+                        <span class="metric-bar-label">Event Throughput</span>
+                        <div class="metric-bar-track">
+                            <div class="metric-bar-fill warning" id="eventThroughput" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h2 class="panel-title">LEGEND</h2>
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <span class="legend-dot high-conf"></span>
+                        <span>High Confidence</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot medium-conf"></span>
+                        <span>Uncertain</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot low-conf"></span>
+                        <span>Rejected</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot hypothesis"></span>
+                        <span>Hypothesis</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot memory"></span>
+                        <span>Memory</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Graph Area -->
+        <div class="main-graph-container">
+            <div id="graphCanvas"></div>
+        </div>
+
+        <!-- Right Panel: Belief Inspector -->
+        <div class="right-panel" id="inspectorPanel">
+            <div class="inspector-placeholder">
+                <div class="placeholder-icon">🔍</div>
+                <div class="placeholder-text">Click on a belief node to inspect</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Panel: Cognitive Event Stream -->
+    <div class="event-stream-container">
+        <div class="event-stream-header">
+            <span>COGNITIVE EVENTS</span>
+            <span class="event-count" id="eventCount">0 events/s</span>
+        </div>
+        <div class="event-stream" id="eventStream">
+            <div class="event-placeholder">No events yet...</div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <script src="/dashboard/js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+# Environment files
+*.env
+.env
+.env.*
+config/config.yaml
+
+# Sensitive config / key files
+config.yml
+config/config.json
+public/keyfiles/
+*.key
+*.pem
+*.p12
+
+# Executable binaries
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.test.exe
+
+# Go workspace files
+go.work
+go.work.sum
+
+# Agent logs and cache
+.agent/logs/
+.agent/cache/
+.agent/cache/**
+
+# ReQiCode: separate git module, handle as submodule
+ReqiCode/
+
+# Discord bot (separate concern)
+discord/
+Discordold/
+
+# Generated output directories
+spiral-output/
+*_output/
+output/
+unknown/
+
+# User Management binaries
+User_Managment/
+User_Managment.exe
+LLM_Control/
+
+# Database runtime data
+*.db
+data/db/
+*.mongo
+*.sqlite
+
+# Log files
+*.log
+server_err.log
+port_test.log
+
+# Vendor
+vendor/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+dev/null
+
+# Build artifacts
+dist/
+build/
+
+# Random utility files
+query
+stop
+spawn cmd.bat

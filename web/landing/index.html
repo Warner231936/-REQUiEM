@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requiem - Cognitive AI Platform</title>
+    <meta name="description" content="Requiem - A cognitive architecture with persistent memory and multi-stage reasoning">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            --card-bg: rgba(15, 15, 35, 0.85);
+            --card-border: rgba(100, 200, 255, 0.2);
+            --primary: #00d4ff;
+            --primary-hover: #00b8e6;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0b0;
+            --accent: #ff00ff;
+            --success: #00ff88;
+            --error: #ff4466;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 420px;
+            width: 100%;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .logo-icon {
+            font-size: 48px;
+            margin-bottom: 4px;
+        }
+
+        .logo-title {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-transparent;
+            background-clip: text;
+        }
+
+        .logo-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            margin-top: 16px;
+        }
+
+        .auth-toggle {
+            display: flex;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 24px;
+        }
+
+        .auth-toggle button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .auth-toggle button.active {
+            background: var(--primary);
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 15px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            background: rgba(255, 68, 102, 0.15);
+            border: 1px solid var(--error);
+            color: var(--error);
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(0, 255, 136, 0.15);
+            border: 1px solid var(--success);
+            color: var(--success);
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .link-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-top: 16px;
+        }
+
+        .link-row a {
+            color: var(--primary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .link-row a:hover {
+            text-decoration: underline;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .divider::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 42%;
+            height: 1px;
+            background: var(--card-border);
+        }
+
+        .divider::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            top: 50%;
+            width: 42%;
+            height: 1px;
+            background: var(--card-border);
+        }
+
+        .footer-links {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            margin: 0 8px;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .admin-link {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            color: var(--accent);
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .admin-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <div class="logo-icon">🧠</div>
+            <div class="logo-title">Requiem</div>
+            <div class="logo-subtitle">Cognitive AI Platform</div>
+        </div>
+
+        <div class="card">
+            <div class="auth-toggle">
+                <button id="loginToggle" class="active" onclick="showLogin()">Login</button>
+                <button id="signupToggle" onclick="showSignup()">Sign Up</button>
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+
+            <!-- Login Form -->
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" name="email" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" name="password" placeholder="Your password" required>
+                </div>
+                <button type="submit" class="submit-btn">Sign In</button>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signupForm" style="display:none;" onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" name="name" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" name="email" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" name="password" placeholder="Choose a password" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirmPassword">Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" name="confirmPassword" placeholder="Confirm password" required>
+                </div>
+                <button type="submit" class="submit-btn">Create Account</button>
+            </form>
+
+        <div class="link-row">
+                <a id="forgotPasswordLink" onclick="showForgotPassword()">Forgot password?</a>
+            </div>
+
+            <!-- Forgot Password Form -->
+            <div id="forgotPasswordForm" style="display:none;">
+                <div class="form-group">
+                    <label for="resetEmail">Email</label>
+                    <input type="email" id="resetEmail" name="email" placeholder="you@example.com" required>
+                </div>
+                <button type="button" class="submit-btn" onclick="handleForgotPassword()">Send Reset Link</button>
+            </div>
+
+            <div class="divider">or</div>
+            <a href="/admin" class="admin-link">Admin Portal &rarr;</a>
+        </div>
+
+        <div class="footer-links">
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+            <a href="#">Contact</a>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/auth';
+
+        function showLogin() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('forgotPasswordForm').style.display = 'none';
+            document.getElementById('loginToggle').classList.add('active');
+            document.getElementById('signupToggle').classList.remove('active');
+            hideMessages();
+        }
+
+        function showSignup() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'block';
+            document.getElementById('forgotPasswordForm').style.display = 'none';
+            document.getElementById('loginToggle').classList.remove('active');
+            document.getElementById('signupToggle').classList.add('active');
+            hideMessages();
+        }
+
+        function showForgotPassword() {
+            document.getElementById('forgotPasswordForm').style.display = 'block';
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'none';
+            hideMessages();
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('errorMessage');
+            el.textContent = msg;
+            el.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        function showSuccess(msg) {
+            const el = document.getElementById('successMessage');
+            el.textContent = msg;
+            el.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            hideMessages();
+            const form = e.target;
+            const email = form.email.value;
+            const password = form.password.value;
+
+            try {
+                const res = await fetch(`${API_BASE}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    showError(data.error || 'Login failed');
+                } else {
+                    window.location.href = data.is_admin ? '/admin' : '/chat';
+                }
+            } catch (err) {
+                showError('Network error. Please try again.');
+            }
+        }
+
+        async function handleSignup(e) {
+            e.preventDefault();
+            hideMessages();
+            const form = e.target;
+            const name = form.name.value;
+            const email = form.email.value;
+            const password = form.password.value;
+            const confirmPassword = form.confirmPassword.value;
+
+            if (password !== confirmPassword) {
+                showError('Passwords do not match');
+                return;
+            }
+
+            if (password.length < 8) {
+                showError('Password must be at least 8 characters');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    showError(data.error || 'Signup failed');
+                    return;
+                }
+
+		showSuccess('Account created! You can now log in.');
+                showLogin();
+            } catch (err) {
+                showError('Network error. Please try again.');
+            }
+        }
+
+        async function handleForgotPassword() {
+            const email = document.getElementById('resetEmail').value;
+            if (!email) {
+                showError('Please enter your email');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/forgot-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    showError(data.error || 'Failed to send reset email');
+                    return;
+                }
+
+                showSuccess('Password reset email sent. Please check your inbox.');
+                showLogin();
+            } catch (err) {
+                showError('Network error. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html>

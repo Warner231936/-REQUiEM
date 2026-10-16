@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requiem Admin - Cognitive Control Panel</title>
+    <meta name="description" content="Requiem Admin Portal - Control your AI companion">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0a0a1a 0%, #12122a 50%, #0a0a1a 100%);
+            --card-bg: rgba(15, 15, 35, 0.9);
+            --card-border: #4a00ff;
+            --primary: #4a00ff;
+            --primary-hover: #6a00ff;
+            --accent: #00d4ff;
+            --text-primary: #e0e0ff;
+            --text-secondary: #a0a0c0;
+            --error: #ff4466;
+            --success: #00ff88;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header .logo {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .header .subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 0 40px rgba(74, 0, 255, 0.2);
+        }
+
+        .warning-banner {
+            background: rgba(255, 68, 102, 0.1);
+            border: 1px solid var(--error);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            color: var(--error);
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--card-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 15px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(74, 0, 255, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            background: rgba(255, 68, 102, 0.15);
+            border: 1px solid var(--error);
+            color: var(--error);
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .link-row {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .link-row a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .link-row a:hover {
+            color: var(--accent);
+        }
+
+        .dashboard-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            padding: 12px;
+            background: rgba(74, 0, 255, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            color: var(--accent);
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-link:hover {
+            background: rgba(74, 0, 255, 0.2);
+            box-shadow: 0 0 15px rgba(74, 0, 255, 0.4);
+        }
+
+        .keyfile-hint {
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid var(--success);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .keyfile-hint .hint-title {
+            color: var(--success);
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">REQUIEM ADMIN</div>
+            <div class="subtitle">Cognitive Control Panel &mdash; Secure Access</div>
+        </div>
+
+        <div class="card">
+            <div class="warning-banner">
+                &#9888; Admin access requires both credentials and keyfile verification
+            </div>
+
+            <div class="keyfile-hint">
+                <div class="hint-title">Keyfile Required</div>
+                <div>A valid <code>requiem.key</code> file must be uploaded to authenticate. The keyfile contains a cryptographic token that is verified against the server's stored master key. Access without a valid keyfile is permanently denied.</div>
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+
+            <form id="adminForm" onsubmit="handleAdminLogin(event)">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="admin@requiem.ai" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Super secret password" required>
+                </div>
+                <div class="form-group">
+                    <label for="keyfile">Keyfile (requiem.key)</label>
+                    <input type="file" id="keyfile" name="keyfile" accept=".key,.keyfile" required>
+                </div>
+                <button type="submit" class="submit-btn">Authenticate &mdash; Enter Admin Panel</button>
+            </form>
+
+            <div class="link-row">
+                <a href="/">Back to Landing &larr;</a>
+            </div>
+            <a href="/dashboard/" class="dashboard-link">View Consciousness Stream &rarr;</a>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/auth';
+
+        function showError(msg) {
+            const el = document.getElementById('errorMessage');
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        async function handleAdminLogin(e) {
+            e.preventDefault();
+            hideError();
+
+            const form = e.target;
+            const email = form.email.value;
+            const password = form.password.value;
+            const keyfileInput = document.getElementById('keyfile');
+            const keyfile = keyfileInput.files[0];
+
+            if (!keyfile) {
+                showError('Keyfile (requiem.key) is required');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('password', password);
+            formData.append('keyfile', keyfile, keyfile.name);
+
+            try {
+                const res = await fetch(`${API_BASE}/admin-login`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    showError(data.error || 'Admin authentication failed');
+                    return;
+                }
+
+                window.location.href = '/chat';
+            } catch (err) {
+                showError('Network error. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html>

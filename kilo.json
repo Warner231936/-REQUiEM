@@ -1,0 +1,13 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "commands": {
+    "build": "go build ./cmd/requiem",
+    "build-all": "go build ./internal/... ./pkg/...",
+    "test": "go test ./tests/... ./internal/... -count=1",
+    "test-verify": "go test ./internal/cognitive/pipeline/... -run TestEvaluateClaim -v",
+    "benchmark": "go test ./tests/benchmark/... -bench=. -count=1",
+    "benchmark-test": "go test ./tests/benchmark/... -v",
+    "vet": "go vet ./internal/... ./pkg/... ./cmd/... ./tests/...",
+    "verify": "go build ./cmd/requiem && go vet ./internal/... ./pkg/... ./cmd/... ./tests/... && go test ./tests/... ./internal/... -count=1"
+  }
+}
